@@ -3,35 +3,57 @@
 
 The twitch api endpoint do not allow to fetch directly a game for it's view count.
 
-To solve this, the server fetch all the streamers for each of the 3 games and get the total of view from each streamer. Then broadcast in realtime for each game.
+To solve this, the server fetch all the streamers for each of the 3 games and get the total of view from each streamer.
+
+Then broadcast in realtime for each game.
 
 **Online exemple**
 ----
 
-My free dyno are probably on sleep for the first time, please wait and refresh the page for the backend to start
+My free dyno are probably on sleep for the first time, please wait and refresh the page for the backend to start.
+
 Application : [Link](https://test-ubisoft-app.herokuapp.com/)
 
 **Installing**
 ----
 
-Server:
+Server: localhost:8999
 
 ```bash
 $ npm install
 $ npm start
 ```
 
-Application:
+Application: localhost:4200
 
 ```bash
 $ npm install
 $ npm start
+```
+
+**Docker**
+----
+
+Server: localhost:8999
+
+```bash
+$ npm run docker:build
+$ npm run docker:run
+```
+
+Application: localhost:4200
+
+```bash
+$ npm run docker:build
+$ npm run docker:run
 ```
 
 **Bugs**
 ----
 
-Twitch api cursor are sometime invalid for game with a lot of streamers. Also when you hit the last page of the api, twitch do not remove the cursor.
+Twitch api cursor are sometime invalid for game with a lot of streamers.
+
+Also when you hit the last page of the api, twitch do not remove the cursor.
 
 **Test**
 ----

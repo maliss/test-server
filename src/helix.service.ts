@@ -39,32 +39,32 @@ export class HelixService {
         });
     }
 
-    public fetch = async () => {
+    public initFetch = async () => {
         const gameIds = Object.keys(this.statistics);
-        const delay = (interval: any) => new Promise(resolve => setTimeout(resolve, interval));
 
         while(this.active) {
             for (let i = 0; i < gameIds.length; i++) {
-                // await delay(refreshGameDelay);
                 await this.fetchTwitchData(gameIds[i]);
             }
-            
         }
-
     }
 
     public fetchTwitchData = (gameId: string) : Promise<any> => {
         const delay = (interval: any) => new Promise(resolve => setTimeout(resolve, interval));
-        return this.fetchingHelix(gameId, this.clientId).then(data => {
+        return api.fetchingHelix(gameId, this.clientId, '').then(data => {
                 
             const viewCounts = data.reduce((totalViewCount: number, stream: any) => {
                 return totalViewCount + stream.viewer_count
             }, 0);
+            
             this.statistics[gameId].viewCount = viewCounts;
             this.statistics[gameId].numberStreamers = data.length;
 
-            console.log('sendStatistic', gameId, viewCounts);
             this.sendStatistic(this.statistics[gameId]);
+
+            console.log('sendStatistic', gameId, viewCounts);
+
+            return Promise.resolve();
             
         }).catch(async err => {
             if(err.response.data.status === 429) {
@@ -73,106 +73,6 @@ export class HelixService {
             }
             return;
         });
-    }
-
-    public updateStatistics = () => {
-        const gameIds = Object.keys(this.statistics);
-        
-
-        /*
-        Promise.all(gameIds.map(gameId => {
-            return this.fetchingHelix(gameId, this.clientId).then(res => {
-                // console.log("gameId", gameId);
-                // console.log('res', res);
-                
-                const viewCounts = res.reduce((totalViewCount: number, stream: any) => {
-                    return totalViewCount + stream.viewer_count
-                }, 0);
-                this.statistics[gameId].viewCount = viewCounts;
-                
-            });
-        })).then(() => {
-            console.log('sendToAll');
-            this.sendToAll();
-            this.updateStatistics();
-        });*/
-
-        /*
-        gameIds.forEach(async gameId => {
-            while(this.active) {
-                const timeStart = moment();
-                await this.fetchingHelix(gameId, this.clientId).then(data => {
-                    const viewCounts = data.reduce((totalViewCount: number, stream: any) => {
-                        return totalViewCount + stream.viewer_count
-                    }, 0);
-                    this.statistics[gameId].viewCount = viewCounts;
-                    
-                }).then(() => {
-                    console.log('sendToAll', gameId);
-                    this.sendStatistic(this.statistics[gameId]);
-                    // this.updateStatistics();
-                });
-
-                const timeDiff = moment().diff(timeStart);
-                console.log('timeDiff', timeDiff, gameId);
-            }
-        });
-        */
-
-        /*
-       const limiter = new Bottleneck({
-            maxConcurrent: 1,
-            minTime: 3000
-        });
-        */
-
-        /*
-        Promise.all(gameIds.map(async gameId => {
-            return await this.fetchingHelix(gameId, this.clientId).then(res => {
-                
-                const viewCounts = res.reduce((totalViewCount: number, stream: any) => {
-                    return totalViewCount + stream.viewer_count
-                }, 0);
-                this.statistics[gameId].viewCount = viewCounts;
-
-                console.log('sendStatistic', gameId);
-                this.sendStatistic(this.statistics[gameId]);
-                
-            });
-        })).then(() => {
-            console.log('updateStatistics');
-            this.updateStatistics();
-        });
-        */
-        
-     
-        gameIds.reduce( async (previousPromise, gameId) => {
-            await previousPromise;
-            return await this.fetchingHelix(gameId, this.clientId).then(res => {
-                    
-                const viewCounts = res.reduce((totalViewCount: number, stream: any) => {
-                    return totalViewCount + stream.viewer_count
-                }, 0);
-                this.statistics[gameId].viewCount = viewCounts;
-
-                console.log('sendStatistic', gameId, viewCounts);
-                this.sendStatistic(this.statistics[gameId]);
-                
-            }).catch(err => {
-                if(err.response.data.status === 429) {
-                    console.log('Too many request')
-                }
-            });
-        }, Promise.resolve()).then(res => {
-                console.log('updateStatistics');
-                this.active = true;
-                // this.updateStatistics();
-        });
-        
-    }
-
-    private stop = () => {
-        this.active = false;
     }
 
     private sendStatistic = (statistic: IStatistic) => {
@@ -190,12 +90,7 @@ export class HelixService {
 
         this.fetchGameData(gameIds);
 
-        console.log('gameIds',gameIds);
-
-        //this.updateStatistics();
-        this.fetch();
-
-        // setInterval(this.updateStatistics, 300000);
+        this.initFetch();
         
         this.wss = new WebSocket.Server({ server });
 
@@ -204,11 +99,7 @@ export class HelixService {
     }
 
     public onConnection = (ws: WebSocket) => {
-        // ws.send(JSON.stringify(this.statistics));
-    }
-
-    public fetchingHelix = (gameId: string, clientId: string) : Promise<any> => {
-        return api.fetchingHelix(gameId,clientId, "");
+        ws.send(JSON.stringify(this.statistics));
     }
 
     public fetchGameData = (gameIds: string[]) => {

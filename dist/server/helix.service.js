@@ -75,10 +75,6 @@ class HelixService {
             this.fetchGameData(gameIds);
             this.initFetch();
             this.wss = new WebSocket.Server({ server });
-            this.wss.on('connection', this.onConnection);
-        };
-        this.onConnection = (ws) => {
-            // ws.send(JSON.stringify(this.statistics));
         };
         this.fetchGameData = (gameIds) => {
             Promise.all(gameIds.map(gameId => {

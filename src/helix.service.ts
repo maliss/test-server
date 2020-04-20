@@ -41,6 +41,7 @@ export class HelixService {
 
     public initFetch = async () => {
         const gameIds = Object.keys(this.statistics);
+        const delay = (interval: any) => new Promise(resolve => setTimeout(resolve, interval));
 
         while(this.active) {
             for (let i = 0; i < gameIds.length; i++) {
@@ -51,13 +52,18 @@ export class HelixService {
                     this.sendStatistic(this.statistics[gameIds[i]]);
 
                     console.log('sendStatistic', gameIds[i], gameData.viewCounts);
+                }).catch(async err => {
+                    if(err.response.data.status === 429) {
+                        console.log('Too many request');
+                        await delay(tooManyRequestDelay);
+                    }
+                    return;
                 });
             }
         }
     }
 
     public fetchTwitchData = (gameId: string) : Promise<any> => {
-        const delay = (interval: any) => new Promise(resolve => setTimeout(resolve, interval));
         return api.fetchingHelix(gameId, this.clientId, '').then(data => {
                 
             const viewCounts = data.reduce((totalViewCount: number, stream: any) => {
@@ -69,12 +75,6 @@ export class HelixService {
                 viewCounts
             }
             
-        }).catch(async err => {
-            if(err.response.data.status === 429) {
-                console.log('Too many request');
-                await delay(tooManyRequestDelay);
-            }
-            return;
         });
     }
 

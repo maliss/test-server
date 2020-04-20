@@ -1,19 +1,18 @@
-FROM node:12-alpine
-
-# Create app directory
+FROM node:12-alpine AS build
 WORKDIR /test-ubisoft-server
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-COPY package*.json ./
+COPY package.json ./
+COPY package-lock.json ./
+RUN ["npm", "install"]
 
-RUN npm install
-# If you are building your code for production
-# RUN npm ci --only=production
+COPY ./src ./src
+COPY tsconfig.json ./
+RUN ["npm", "run", "build"]
 
-# Bundle app source
-COPY . .
+FROM node:12-alpine
+WORKDIR /test-ubisoft-server
 
-EXPOSE 8999
-CMD [ "node", "dist/server/server.js" ]
+COPY --from=build /test-ubisoft-server/dist ./
+COPY --from=build /test-ubisoft-server/package.json ./
+RUN ["npm", "install", "--production"]
+CMD ["node", "server/server.js"]

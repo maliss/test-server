@@ -22,8 +22,9 @@
   },
   "scripts": {
     "start": "tsc && node dist/server/server.js",
+    "build": "tsc",
     "test": "jest",
-    "docker:build": "docker build -t maliss/test-ubisoft-server .",
-    "docker:run": "docker run -p 8999:8999 -d maliss/test-ubisoft-server"
+    "docker:build": "docker build -t test-ubisoft-server .",
+    "docker:run": "docker run -p 8999:8999 -d test-ubisoft-server"
   }
 }

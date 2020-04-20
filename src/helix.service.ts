@@ -51,7 +51,6 @@ export class HelixService {
 
                     this.sendStatistic(this.statistics[gameIds[i]]);
 
-                    console.log('sendStatistic', gameIds[i], gameData.viewCounts);
                 }).catch(async err => {
                     if(err.response.data.status === 429) {
                         console.log('Too many request');

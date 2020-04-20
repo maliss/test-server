@@ -10,5 +10,5 @@ module.exports = {
     "^.+\\.tsx?$": "ts-jest"
   },
   verbose: true,
-  coveragePathIgnorePatterns: []
+  coveragePathIgnorePatterns: [],
 };

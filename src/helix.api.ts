@@ -2,9 +2,16 @@ import axios from "axios";
 
 const delay = (interval: any) => new Promise(resolve => setTimeout(resolve, interval));
 
+// Twitch max number of request per minute
+const maxNumberRequestPerMinute = 30;
+
+// Number in millisecond between fetch
+const delayBetweenFetch = (60 * 1000) / maxNumberRequestPerMinute;
+
+// Recursive function to manage twitch api pagination
 export const fetchingHelix = async (gameId: string, clientId: string, cursor: string, data: any = []) : Promise<any> => {
     
-   await delay(2000);
+   await delay(delayBetweenFetch);
     
     const helix = axios.create({
         baseURL: 'https://api.twitch.tv/helix',
@@ -27,9 +34,10 @@ export const fetchingHelix = async (gameId: string, clientId: string, cursor: st
 
 }
 
+// Fetch game data
 export const fetchingHelixGameData = async (gameId: string, clientId: string) : Promise<any> => {
     
-    await delay(2000);
+    await delay(delayBetweenFetch);
     
     const helix = axios.create({
         baseURL: 'https://api.twitch.tv/helix',

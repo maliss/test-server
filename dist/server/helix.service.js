@@ -34,19 +34,24 @@ class HelixService {
         };
         this.initFetch = () => __awaiter(this, void 0, void 0, function* () {
             const gameIds = Object.keys(this.statistics);
+            const delay = (interval) => new Promise(resolve => setTimeout(resolve, interval));
             while (this.active) {
                 for (let i = 0; i < gameIds.length; i++) {
-                    yield this.fetchTwitchData(gameIds[i]).then((gameData) => {
+                    yield this.fetchHelixData(gameIds[i]).then((gameData) => {
                         this.statistics[gameIds[i]].viewCount = gameData.viewCounts;
                         this.statistics[gameIds[i]].numberStreamers = gameData.steamerCount;
                         this.sendStatistic(this.statistics[gameIds[i]]);
-                        console.log('sendStatistic', gameIds[i], gameData.viewCounts);
-                    });
+                    }).catch((err) => __awaiter(this, void 0, void 0, function* () {
+                        if (err.response.data.status === 429) {
+                            console.log('Too many request');
+                            yield delay(tooManyRequestDelay);
+                        }
+                        return;
+                    }));
                 }
             }
         });
-        this.fetchTwitchData = (gameId) => {
-            const delay = (interval) => new Promise(resolve => setTimeout(resolve, interval));
+        this.fetchHelixData = (gameId) => {
             return api.fetchingHelix(gameId, this.clientId, '').then(data => {
                 const viewCounts = data.reduce((totalViewCount, stream) => {
                     return totalViewCount + stream.viewer_count;
@@ -55,13 +60,7 @@ class HelixService {
                     steamerCount: data.length,
                     viewCounts
                 };
-            }).catch((err) => __awaiter(this, void 0, void 0, function* () {
-                if (err.response.data.status === 429) {
-                    console.log('Too many request');
-                    yield delay(tooManyRequestDelay);
-                }
-                return;
-            }));
+            });
         };
         this.sendStatistic = (statistic) => {
             this.wss.clients.forEach((ws) => {

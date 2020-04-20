@@ -1,4 +1,3 @@
-import axios from "axios";
 import * as api from "./helix.api";
 import * as WebSocket from 'ws';
 import * as http from 'http';
@@ -16,6 +15,9 @@ type StatisticsKeys = { [key: string]: IStatistic };
 const tooManyRequestDelay = 60000;
 
 export class HelixService {
+    fetchHelixData(arg0: string): any {
+        throw new Error("Method not implemented.");
+    }
 
     private statistics: StatisticsKeys = {};
     private clientId: string = "";
@@ -32,6 +34,7 @@ export class HelixService {
         }
     }
 
+    // Initialise all games
     public initStatistics = (gameIds: string[]) => {
         this.statistics = {};
         gameIds.forEach((gameId: string) => {
@@ -39,13 +42,14 @@ export class HelixService {
         });
     }
 
-    public initFetch = async () => {
+    // Wait for all games to finish to restart the loop
+    public initHelixFetch = async () => {
         const gameIds = Object.keys(this.statistics);
         const delay = (interval: any) => new Promise(resolve => setTimeout(resolve, interval));
 
         while(this.active) {
             for (let i = 0; i < gameIds.length; i++) {
-                await this.fetchHelixData(gameIds[i]).then((gameData) => {
+                await this.fetchSingleHelixData(gameIds[i]).then((gameData) => {
                     this.statistics[gameIds[i]].viewCount = gameData.viewCounts;
                     this.statistics[gameIds[i]].numberStreamers = gameData.steamerCount;
 
@@ -53,7 +57,7 @@ export class HelixService {
 
                 }).catch(async err => {
                     if(err.response.data.status === 429) {
-                        console.log('Too many request');
+                        // Too many request
                         await delay(tooManyRequestDelay);
                     }
                     return;
@@ -62,7 +66,8 @@ export class HelixService {
         }
     }
 
-    public fetchHelixData = (gameId: string) : Promise<any> => {
+    // Fetch a single game
+    public fetchSingleHelixData = (gameId: string) : Promise<any> => {
         return api.fetchingHelix(gameId, this.clientId, '').then(data => {
                 
             const viewCounts = data.reduce((totalViewCount: number, stream: any) => {
@@ -77,12 +82,14 @@ export class HelixService {
         });
     }
 
+    // Broadcast data for a single game
     private sendStatistic = (statistic: IStatistic) => {
         this.wss.clients.forEach((ws: any) => {
             ws.send(JSON.stringify(statistic));
         });
     }
 
+    // Start websocket and initialise / fetch
     public start = (server: http.Server, gameIds: string[], clientId: string) => {
 
         this.clientId = clientId;
@@ -92,13 +99,13 @@ export class HelixService {
 
         this.fetchGameData(gameIds);
 
-        this.initFetch();
+        this.initHelixFetch();
         
         this.wss = new WebSocket.Server({ server });
      
     }
 
-
+    // Fetch information about the game : name and box_art_url
     public fetchGameData = (gameIds: string[]) => {
         Promise.all(gameIds.map(gameId => {
             return api.fetchingHelixGameData(gameId, this.clientId);

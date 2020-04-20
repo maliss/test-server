@@ -20,9 +20,6 @@ exports.fetchingHelix = (gameId, clientId, cursor, data = []) => __awaiter(void 
     const numberOfDateByRequest = 100;
     return helix.get(`/streams?first=${numberOfDateByRequest}&game_id=${gameId}` + (cursor ? `&after=${cursor}` : '')).then((response) => {
         data.push(...response.data.data);
-        if (gameId === "460630") {
-            console.log('response.data.data.length', response.data.data.length, gameId);
-        }
         if (response.data.data.length < numberOfDateByRequest) {
             return data;
         }

@@ -26,7 +26,7 @@ describe("Helix services", () => {
                 jest.resetAllMocks();
                 const service = new HelixService();
                 jest.spyOn(api,"fetchingHelix").mockResolvedValueOnce([100,200,300].map(newMockData));
-                result = await service.fetchHelixData("fakeGameId");
+                result = await service.fetchSingleHelixData("fakeGameId");
             })
 
             test("Sum of number of viewers" , async () => {

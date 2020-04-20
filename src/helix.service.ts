@@ -45,7 +45,7 @@ export class HelixService {
 
         while(this.active) {
             for (let i = 0; i < gameIds.length; i++) {
-                await this.fetchTwitchData(gameIds[i]).then((gameData) => {
+                await this.fetchHelixData(gameIds[i]).then((gameData) => {
                     this.statistics[gameIds[i]].viewCount = gameData.viewCounts;
                     this.statistics[gameIds[i]].numberStreamers = gameData.steamerCount;
 
@@ -63,7 +63,7 @@ export class HelixService {
         }
     }
 
-    public fetchTwitchData = (gameId: string) : Promise<any> => {
+    public fetchHelixData = (gameId: string) : Promise<any> => {
         return api.fetchingHelix(gameId, this.clientId, '').then(data => {
                 
             const viewCounts = data.reduce((totalViewCount: number, stream: any) => {

@@ -9,6 +9,7 @@
     "node": "13.x"
   },
   "dependencies": {
+    "@types/jest": "^25.2.1",
     "axios": "^0.19.2",
     "express": "^4.17.1",
     "ws": "^7.2.3"
@@ -23,7 +24,7 @@
   "scripts": {
     "start": "tsc && node dist/server/server.js",
     "build": "tsc",
-    "test": "jest",
+    "test": "jest --verbose",
     "docker:build": "docker build -t test-ubisoft-server .",
     "docker:run": "docker run -p 8999:8999 -d test-ubisoft-server"
   }

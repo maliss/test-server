@@ -15,7 +15,7 @@ const configuration = {
     cliendId: "pi33v9pxjkhip7946othx0vyx6o03a"
 }
 
-const helixService = new HelixService;
+const helixService = new HelixService();
 helixService.start(server, configuration.gameIds, configuration.cliendId);
 
 //start our server

@@ -44,7 +44,14 @@ export class HelixService {
 
         while(this.active) {
             for (let i = 0; i < gameIds.length; i++) {
-                await this.fetchTwitchData(gameIds[i]);
+                await this.fetchTwitchData(gameIds[i]).then((gameData) => {
+                    this.statistics[gameIds[i]].viewCount = gameData.viewCounts;
+                    this.statistics[gameIds[i]].numberStreamers = gameData.steamerCount;
+
+                    this.sendStatistic(this.statistics[gameIds[i]]);
+
+                    console.log('sendStatistic', gameIds[i], gameData.viewCounts);
+                });
             }
         }
     }
@@ -57,14 +64,10 @@ export class HelixService {
                 return totalViewCount + stream.viewer_count
             }, 0);
             
-            this.statistics[gameId].viewCount = viewCounts;
-            this.statistics[gameId].numberStreamers = data.length;
-
-            this.sendStatistic(this.statistics[gameId]);
-
-            console.log('sendStatistic', gameId, viewCounts);
-
-            return Promise.resolve();
+            return {
+                steamerCount: data.length,
+                viewCounts
+            }
             
         }).catch(async err => {
             if(err.response.data.status === 429) {
@@ -93,14 +96,9 @@ export class HelixService {
         this.initFetch();
         
         this.wss = new WebSocket.Server({ server });
-
-        this.wss.on('connection', this.onConnection);
      
     }
 
-    public onConnection = (ws: WebSocket) => {
-        ws.send(JSON.stringify(this.statistics));
-    }
 
     public fetchGameData = (gameIds: string[]) => {
         Promise.all(gameIds.map(gameId => {

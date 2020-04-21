@@ -11,8 +11,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = require("axios");
 const delay = (interval) => new Promise(resolve => setTimeout(resolve, interval));
+// Twitch max number of request per minute
+const maxNumberRequestPerMinute = 30;
+// Number in millisecond between fetch
+const delayBetweenFetch = (60 * 1000) / maxNumberRequestPerMinute;
+// Recursive function to manage twitch api pagination
 exports.fetchingHelix = (gameId, clientId, cursor, data = []) => __awaiter(void 0, void 0, void 0, function* () {
-    yield delay(2000);
+    yield delay(delayBetweenFetch);
     const helix = axios_1.default.create({
         baseURL: 'https://api.twitch.tv/helix',
         headers: { 'Client-ID': clientId }
@@ -28,8 +33,9 @@ exports.fetchingHelix = (gameId, clientId, cursor, data = []) => __awaiter(void 
         return Promise.reject(err);
     });
 });
+// Fetch game data
 exports.fetchingHelixGameData = (gameId, clientId) => __awaiter(void 0, void 0, void 0, function* () {
-    yield delay(2000);
+    yield delay(delayBetweenFetch);
     const helix = axios_1.default.create({
         baseURL: 'https://api.twitch.tv/helix',
         headers: { 'Client-ID': clientId }

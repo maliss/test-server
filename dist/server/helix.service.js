@@ -26,24 +26,26 @@ class HelixService {
                 numberStreamers: 0
             };
         };
+        // Initialise all games
         this.initStatistics = (gameIds) => {
             this.statistics = {};
             gameIds.forEach((gameId) => {
                 this.statistics[gameId] = this.newStatistics(gameId);
             });
         };
-        this.initFetch = () => __awaiter(this, void 0, void 0, function* () {
+        // Wait for all games to finish to restart the loop
+        this.initHelixFetch = () => __awaiter(this, void 0, void 0, function* () {
             const gameIds = Object.keys(this.statistics);
             const delay = (interval) => new Promise(resolve => setTimeout(resolve, interval));
             while (this.active) {
                 for (let i = 0; i < gameIds.length; i++) {
-                    yield this.fetchHelixData(gameIds[i]).then((gameData) => {
+                    yield this.fetchSingleHelixData(gameIds[i]).then((gameData) => {
                         this.statistics[gameIds[i]].viewCount = gameData.viewCounts;
                         this.statistics[gameIds[i]].numberStreamers = gameData.steamerCount;
                         this.sendStatistic(this.statistics[gameIds[i]]);
                     }).catch((err) => __awaiter(this, void 0, void 0, function* () {
                         if (err.response.data.status === 429) {
-                            console.log('Too many request');
+                            // Too many request
                             yield delay(tooManyRequestDelay);
                         }
                         return;
@@ -51,7 +53,8 @@ class HelixService {
                 }
             }
         });
-        this.fetchHelixData = (gameId) => {
+        // Fetch a single game
+        this.fetchSingleHelixData = (gameId) => {
             return api.fetchingHelix(gameId, this.clientId, '').then(data => {
                 const viewCounts = data.reduce((totalViewCount, stream) => {
                     return totalViewCount + stream.viewer_count;
@@ -62,19 +65,22 @@ class HelixService {
                 };
             });
         };
+        // Broadcast data for a single game
         this.sendStatistic = (statistic) => {
             this.wss.clients.forEach((ws) => {
                 ws.send(JSON.stringify(statistic));
             });
         };
+        // Start websocket and initialise / fetch
         this.start = (server, gameIds, clientId) => {
             this.clientId = clientId;
             this.active = true;
             this.initStatistics(gameIds);
             this.fetchGameData(gameIds);
-            this.initFetch();
+            this.initHelixFetch();
             this.wss = new WebSocket.Server({ server });
         };
+        // Fetch information about the game : name and box_art_url
         this.fetchGameData = (gameIds) => {
             Promise.all(gameIds.map(gameId => {
                 return api.fetchingHelixGameData(gameId, this.clientId);
@@ -85,6 +91,9 @@ class HelixService {
                 });
             });
         };
+    }
+    fetchHelixData(arg0) {
+        throw new Error("Method not implemented.");
     }
 }
 exports.HelixService = HelixService;
